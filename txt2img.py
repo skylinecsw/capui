@@ -1,8 +1,10 @@
 import api_client
 
-def generate_image(prompt, negative_prompt, width_slider, height_slider):
+def generate_image(prompt, negative_prompt, width_slider, height_slider, lora_dropdown):
+    if lora_dropdown:
+        prompt += ", " + lora_dropdown
     result = api_client.api.txt2img(
-        prompt=prompt,
+        prompt=prompt, 
         negative_prompt=negative_prompt,
         seed=-1, 
         cfg_scale=7, 

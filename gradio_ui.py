@@ -1,52 +1,54 @@
 import gradio as gr
 from txt2img import generate_image
 
-prompt = gr.Text(
+prompt = gr.Textbox(
     label="Prompt",
     show_label=False,
     max_lines=2,
-    placeholder="Enter positive prompt",
-    container=False,
+    placeholder="Enter positive prompt"
 )
-negative_prompt = gr.Text(
+negative_prompt = gr.Textbox(
     label="Negative Prompt",
     show_label=False,
     max_lines=2,
-    placeholder="Enter Negative prompt",
-    container=False,
+    placeholder="Enter Negative prompt"
 )
 width_slider = gr.Slider(
     value=512,
     minimum=256,
     maximum=2048,
     label="Width",
-    show_label="True",
-    step=64,
-    container=False,
+    show_label='True', 
+    step=64
 )
 height_slider = gr.Slider(
     value=512,
     minimum=256,
     maximum=2048,
     label="Height",
-    show_label="True",
-    step=64,
-    container=False,
+    show_label='True', 
+    step=64
 )
-
-lora_list = ["Dog", "Cat", "Bird", "Fish"]
+lora_list = [
+    ('None', ''), 
+    ('Texture', 'diffuse texture, <lora:DiffuseTexture_v11:1>'), 
+    ('Metal Texture', 'metal texture, <lora:dirtymetal_textures_1:0.8>'), 
+    ('Old school Texture', 'texture, old school, quake, <lora:Quake_Lora:1>'), 
+    ('Book', 'book, <lora:FantasyIcons_Books_noFlip:1>'), 
+    ('Gemstone', 'gemstone, <lora:FantasyIcons_Gemstones:1>')
+]
 lora_dropdown = gr.Dropdown(
     choices=lora_list,
+    value='', 
     label="Select an LoRA",
-    value=None
 )
 
 iface = gr.Interface(
     fn = generate_image,
     inputs=[prompt,negative_prompt,width_slider,height_slider,lora_dropdown],
     outputs="image",
-    title="Text to Image Generation",
-    allow_flagging=False
+    title="Asset Generater",
+    allow_flagging='never'
 )
 
 iface.launch()
