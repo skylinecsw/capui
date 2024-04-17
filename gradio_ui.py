@@ -1,5 +1,5 @@
 import gradio as gr
-from txt2img import generate_image
+import txt2img
 
 prompt = gr.Textbox(
     label="Prompt",
@@ -44,7 +44,7 @@ lora_dropdown = gr.Dropdown(
 )
 
 iface = gr.Interface(
-    fn = generate_image,
+    fn = txt2img.generate_image,
     inputs=[prompt,negative_prompt,width_slider,height_slider,lora_dropdown],
     outputs="image",
     title="Asset Generater",

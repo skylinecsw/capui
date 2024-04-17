@@ -1,0 +1,3 @@
+run install.bat
+
+when install is completed, unzip Lora and run Move_LoRA_Files.bat and Move_config.bat
