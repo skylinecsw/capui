@@ -1,6 +1,8 @@
 import gradio as gr
 import txt2img
 
+theme = gr.themes.Monochrome()
+
 prompt = gr.Textbox(
     label="Prompt",
     show_label=False,
@@ -37,15 +39,18 @@ height_slider = gr.Slider(
     show_label='True', 
     step=64
 )
+
 model_list = [
     ('v1-5-pruned-emaonly', 'v1-5-pruned-emaonly.safetensors'), 
-    ('pixelsprite, 16butscene', 'allInOnePixelModel_v1.ckpt'), 
+    ('pixelsprite, 16bitscene', 'allInOnePixelModel_v1.ckpt'), 
     ('anime style', 'animesfw-latest.ckpt'), 
 ]
+# model_list = [api_client.get_model_list()]
+# print(model_list)
 model_dropdown = gr.Dropdown(
     choices=model_list,
     value='v1-5-pruned-emaonly.safetensors', 
-    label="Select an Model",
+    label="Select an Model"
 )
 lora_list = [
     ('None', ''), 
@@ -53,7 +58,9 @@ lora_list = [
     ('Metal Texture', 'metal texture, <lora:dirtymetal_textures_1:0.8>'), 
     ('Old school Texture', 'texture, old school, quake, <lora:Quake_Lora:1>'), 
     ('Book', 'book, <lora:FantasyIcons_Books_noFlip:1>'), 
-    ('Gemstone', 'gemstone, <lora:FantasyIcons_Gemstones:1>')
+    ('Gemstone', 'gemstone, <lora:FantasyIcons_Gemstones:1>'), 
+    ('pixel sprites', 'pixel, pixel art, pixelart, xiangsu, xiang su, <lora:pixel sprites:1>'), 
+    ('PixelAnimal', 'animal, pixel, pixel art, pixelart, xiangsu, xiang su, <lora:PixelAnimal:1>'), 
 ]
 lora_dropdown = gr.Dropdown(
     choices=lora_list,
@@ -64,9 +71,10 @@ lora_dropdown = gr.Dropdown(
 iface = gr.Interface(
     fn = txt2img.generate_image,
     inputs=[prompt,negative_prompt,step_slider,width_slider,height_slider,model_dropdown,lora_dropdown],
-    outputs="image",
-    title="Asset Generator",
-    allow_flagging='never'
+    outputs=["image"],
+    title="Asset Geneator",
+    allow_flagging='never', 
+    theme=theme
 )
 
 iface.launch()
