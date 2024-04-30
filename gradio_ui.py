@@ -29,6 +29,16 @@ height_slider = gr.Slider(
     show_label='True', 
     step=64
 )
+model_list = [
+    ('v1-5-pruned-emaonly', 'v1-5-pruned-emaonly.safetensors'), 
+    ('pixelsprite, 16butscene', 'allInOnePixelModel_v1.ckpt'), 
+    ('anime style', 'animesfw-latest.ckpt'), 
+]
+model_dropdown = gr.Dropdown(
+    choices=model_list,
+    value='', 
+    label="Select an Model",
+)
 lora_list = [
     ('None', ''), 
     ('Texture', 'diffuse texture, <lora:DiffuseTexture_v11:1>'), 
@@ -45,9 +55,9 @@ lora_dropdown = gr.Dropdown(
 
 iface = gr.Interface(
     fn = txt2img.generate_image,
-    inputs=[prompt,negative_prompt,width_slider,height_slider,lora_dropdown],
+    inputs=[prompt,negative_prompt,width_slider,height_slider,model_dropdown,lora_dropdown],
     outputs="image",
-    title="Asset Generater",
+    title="Asset Generator",
     allow_flagging='never'
 )
 
