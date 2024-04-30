@@ -13,6 +13,14 @@ negative_prompt = gr.Textbox(
     max_lines=2,
     placeholder="Enter Negative prompt"
 )
+step_slider = gr.Slider(
+    value=20,
+    minimum=1,
+    maximum=100,
+    label="Step",
+    show_label='True', 
+    step=1
+)
 width_slider = gr.Slider(
     value=512,
     minimum=256,
@@ -55,7 +63,7 @@ lora_dropdown = gr.Dropdown(
 
 iface = gr.Interface(
     fn = txt2img.generate_image,
-    inputs=[prompt,negative_prompt,width_slider,height_slider,model_dropdown,lora_dropdown],
+    inputs=[prompt,negative_prompt,step_slider,width_slider,height_slider,model_dropdown,lora_dropdown],
     outputs="image",
     title="Asset Generator",
     allow_flagging='never'
