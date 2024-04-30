@@ -16,3 +16,6 @@ api = webuiapi.WebUIApi(host='127.0.0.1', port=7861)
 # username, password are not protected and can be derived easily if the communication channel is not encrypted.
 # you can also pass username, password to the WebUIApi constructor.
 api.set_auth('username', 'password')
+
+def change_model(model):
+    api.util_set_model(model)

@@ -44,7 +44,7 @@ model_list = [
 ]
 model_dropdown = gr.Dropdown(
     choices=model_list,
-    value='', 
+    value='v1-5-pruned-emaonly.safetensors', 
     label="Select an Model",
 )
 lora_list = [
