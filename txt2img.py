@@ -4,12 +4,12 @@ import gradio as gr
 import torch
 from PIL import Image
 import numpy as np
+import cv2
 
 model = torch.hub.load("yolov5", 'custom', "yolov5\yolov5s.pt", source='local')
 
 def generate_image(prompt, negative_prompt, step_slider, width_slider, height_slider, model_dropdown, lora_dropdown):
-    if lora_dropdown:
-        prompt += ", " + lora_dropdown
+    prompt += ", " + lora_dropdown
     api_client.change_model(model_dropdown)
     result = api_client.api.txt2img(
         prompt=prompt, 
@@ -34,6 +34,21 @@ def generate_image(prompt, negative_prompt, step_slider, width_slider, height_sl
     results.render()
     # Convert image back to PIL format
     img_with_boxes = Image.fromarray(results.ims[0])
+
+    # # Load the original image
+    # image = result.image
+    # img = cv2.imread(image)
+
+    # # Extract bounding boxes
+    # boxes = results[0].boxes.xyxy.tolist()
+
+    # # Iterate through the bounding boxes
+    # for i, box in enumerate(boxes):
+    #     x1, y1, x2, y2 = box
+    #     # Crop the object using the bounding box coordinates
+    #     ultralytics_crop_object = img[int(y1):int(y2), int(x1):int(x2)]
+    #     # Save the cropped object as an image
+    #     cv2.imwrite('ultralytics_crop_' + str(i) + '.png', ultralytics_crop_object)
 
     # crops = results.crop(save=True)
 

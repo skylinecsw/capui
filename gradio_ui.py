@@ -43,7 +43,8 @@ height_slider = gr.Slider(
 model_list = [
     ('v1-5-pruned-emaonly', 'v1-5-pruned-emaonly.safetensors'), 
     ('pixelsprite, 16bitscene', 'allInOnePixelModel_v1.ckpt'), 
-    ('anime style', 'animesfw-latest.ckpt'), 
+    ('anime', 'animesfw-latest.ckpt'), 
+    ('AnyLora', 'anyloraCheckpoint_bakedvaeBlessedFp16.safetensors'), 
 ]
 # model_list = [api_client.get_model_list()]
 # print(model_list)
