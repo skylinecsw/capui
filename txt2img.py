@@ -25,6 +25,7 @@ def generate_image(prompt, negative_prompt, step_slider, width_slider, height_sl
     # 실시간 미리보기
     # result2 = api_client.api.live_preview()
 
+# Object Detection YOLOv5
     # Convert image to numpy array
     img_np = np.array(result.image)
     # Use YOLOv5 for object detection
@@ -33,8 +34,10 @@ def generate_image(prompt, negative_prompt, step_slider, width_slider, height_sl
     results.render()
     # Convert image back to PIL format
     img_with_boxes = Image.fromarray(results.ims[0])
-    
-    return img_with_boxes
+
+    # crops = results.crop(save=True)
+
+    return result.image, img_with_boxes
     # return result.image
 
 # def generate_image(prompt, negative_prompt, seed, cfg_scale, sampler_index, steps, height, width, save_images):

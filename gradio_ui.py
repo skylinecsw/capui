@@ -61,6 +61,11 @@ lora_list = [
     ('Gemstone', 'gemstone, <lora:FantasyIcons_Gemstones:1>'), 
     ('pixel sprites', 'pixel, pixel art, pixelart, xiangsu, xiang su, <lora:pixel sprites:1>'), 
     ('PixelAnimal', 'animal, pixel, pixel art, pixelart, xiangsu, xiang su, <lora:PixelAnimal:1>'), 
+    ('Pixel Weapon(axe, sword, bow)', 'weapon, no humans, pixel, pixel art, pixelart, <lora:pixel sword:1>'), 
+    ('Pixel Gun', 'gun, no humans, pixel, pixel art, pixelart, <lora:pixel gun:1>'), 
+    ('Pixel Book', 'boox,pixel, pixel art, pixelart, xiangsu, xiang su, <lora:pixel book:1>'), 
+    ('Pixel Bottle', 'bottle,pixel, pixel art, pixelart, xiangsu, xiang su, simple background, <lora:Pixel bottle:1>'), 
+    ('Pixel Isometry', '((Isometry)), pixel, pixel art, solo, <lora:Pixel_Building2:1>'), 
 ]
 lora_dropdown = gr.Dropdown(
     choices=lora_list,
@@ -71,7 +76,7 @@ lora_dropdown = gr.Dropdown(
 iface = gr.Interface(
     fn = txt2img.generate_image,
     inputs=[prompt,negative_prompt,step_slider,width_slider,height_slider,model_dropdown,lora_dropdown],
-    outputs=["image"],
+    outputs=["image", "image"],
     title="Asset Geneator",
     allow_flagging='never', 
     theme=theme
