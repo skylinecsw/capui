@@ -2,6 +2,8 @@ import gradio as gr
 import txt2img
 import img2img
 import os
+import img_viewer
+import background_remover
 
 def open_folder(model_input_path):
     model_input_path = "stable-diffusion-webui\models\Stable-diffusion"
@@ -10,10 +12,6 @@ def open_folder(model_input_path):
         return
     except Exception as e:
         return f"오류가 발생했습니다: {e}"
-
-open_model_folder = gr.Button(
-    
-)
 
 def get_model_names(folder_path, extensions):
     try:
@@ -32,7 +30,9 @@ model_names = get_model_names(folder_path, extensions)
 
 theme = gr.themes.Monochrome()
 
+#################################################
 #################### Txt2Img ####################
+#################################################
 
 prompt = gr.Textbox(
     label="Prompt",
@@ -75,6 +75,9 @@ model_dropdown = gr.Dropdown(
     value='v1-5-pruned-emaonly.safetensors', 
     label="Select an Model"
 )
+open_model_button = gr.Button(
+    value="Open Model Folder", 
+)
 lora_list = [
     ('None', ''), 
     ('Texture', 'diffuse texture, <lora:DiffuseTexture_v11:1>'), 
@@ -106,8 +109,9 @@ txt2img_tab = gr.Interface(
     # outputs=["image", "image"],
     
 )
-
+#################################################
 #################### Img2Img ####################
+#################################################
 
 i2i_input = gr.Image(
     show_label=False,
@@ -193,8 +197,34 @@ img2img_tab = gr.Interface(
     allow_flagging='never', 
 )
 
+img_viewer_tab = gr.Interface(
+    fn=img_viewer.load_images_from_folder,
+    inputs=gr.Dropdown(label="Folder Path", choices=img_viewer.get_folders_in_directory("stable-diffusion-webui/output/txt2img-images")),
+    outputs=gr.Gallery(label="Images"),
+    title="Image Viewer",
+    description="Load and display images from a folder.", 
+    allow_flagging='never', 
+)
+
+# Background Remover 탭 추가
+# background_remover_tab = gr.Interface(
+#     fn=background_remover.background_remove,
+#     inputs=gr.Image(type="filepath", label="Upload Image"),
+#     outputs=gr.Image(label="Cropped Image"),
+#     title="Background Remover",
+#     description="Remove background using YOLOv5.", 
+#     allow_flagging='never', 
+# )
+background_remover_tab = gr.Interface(
+    fn=background_remover.background_remover_and_bbox,
+    inputs=gr.Image(type="filepath", label="Upload Image"),
+    outputs=[gr.Image(label="Image with Bounding Boxes"), gr.Image(label="Cropped Image")],
+    title="Background Remover",
+    description="Detect objects and remove background using YOLOv5."
+)
+
 demo = gr.TabbedInterface(
-    [txt2img_tab, img2img_tab], ["txt2img", "img2img"], 
+    [txt2img_tab, img2img_tab, img_viewer_tab, background_remover_tab], ["txt2img", "img2img", "Image Viewer", "Background Remover"], 
     title="Asset Geneator",
     theme=theme
 )

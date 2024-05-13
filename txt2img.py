@@ -22,8 +22,6 @@ def generate_image(prompt, negative_prompt, step_slider, width_slider, height_sl
         height=height_slider, 
         save_images=True
     )
-    # 실시간 미리보기
-    # result2 = api_client.api.live_preview()
 
 # Object Detection YOLOv5
     # Convert image to numpy array
