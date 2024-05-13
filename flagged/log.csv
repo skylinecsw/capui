@@ -1,0 +1,2 @@
+Prompt,Negative Prompt,Step,Width,Height,Select an Model,Select an LoRA,output,flag,username,timestamp
+,,20,512,512,v1-5-pruned-emaonly.safetensors,,,,,2024-05-13 16:43:11.235508

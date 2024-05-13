@@ -52,8 +52,8 @@ def generate_image(prompt, negative_prompt, step_slider, width_slider, height_sl
 
     # crops = results.crop(save=True)
 
-    return result.image, img_with_boxes
-    # return result.image
+    # return result.image, img_with_boxes
+    return result.image
 
 # def generate_image(prompt, negative_prompt, seed, cfg_scale, sampler_index, steps, height, width, save_images):
 #     result = api_client.api.txt2img(
