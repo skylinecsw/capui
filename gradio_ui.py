@@ -28,174 +28,171 @@ extensions = (".ckpt", ".safetensors")
 
 model_names = get_model_names(folder_path, extensions)
 
+lora_list = [
+        ('None', ''), 
+        ('Texture', 'diffuse texture, <lora:DiffuseTexture_v11:1>'), 
+        ('Metal Texture', 'metal texture, <lora:dirtymetal_textures_1:0.8>'), 
+        ('Old school Texture', 'texture, old school, quake, <lora:Quake_Lora:1>'), 
+        ('Book', 'book, <lora:FantasyIcons_Books_noFlip:1>'), 
+        ('Gemstone', 'gemstone, <lora:FantasyIcons_Gemstones:1>'), 
+        ('pixel sprites', 'pixel, pixel art, pixelart, xiangsu, xiang su, <lora:pixel sprites:1>'), 
+        ('PixelAnimal', 'animal, pixel, pixel art, pixelart, xiangsu, xiang su, <lora:PixelAnimal:1>'), 
+        ('Pixel Weapon(axe, sword, bow)', 'weapon, no humans, pixel, pixel art, pixelart, <lora:pixel sword:1>'), 
+        ('Pixel Gun', 'gun, no humans, pixel, pixel art, pixelart, <lora:pixel gun:1>'), 
+        ('Pixel Book', 'boox,pixel, pixel art, pixelart, xiangsu, xiang su, <lora:pixel book:1>'), 
+        ('Pixel Bottle', 'bottle,pixel, pixel art, pixelart, xiangsu, xiang su, simple background, <lora:Pixel bottle:1>'), 
+        ('Pixel Isometry', '((Isometry)), pixel, pixel art, solo, <lora:Pixel_Building2:1>'), 
+        ]
+
 theme = gr.themes.Monochrome()
 
 #################################################
 #################### Txt2Img ####################
 #################################################
+with gr.Blocks() as text_to_img:
+    with gr.Row():
+        with gr.Column():
+            prompt = gr.Textbox(
+                label="Prompt",
+                show_label=True,
+                max_lines=2,
+                placeholder="Enter positive prompt"
+            )
+            negative_prompt = gr.Textbox(
+                label="Negative Prompt",
+                show_label=True,
+                max_lines=2,
+                placeholder="Enter Negative prompt"
+            )
+            step_slider = gr.Slider(
+                value=20,
+                minimum=1,
+                maximum=100,
+                label="Step",
+                show_label=True, 
+                step=1
+            )
+            width_slider = gr.Slider(
+                value=512,
+                minimum=256,
+                maximum=2048,
+                label="Width",
+                show_label=True, 
+                step=64
+            )
+            height_slider = gr.Slider(
+                value=512, 
+                minimum=256, 
+                maximum=2048, 
+                label="Height", 
+                show_label=True, 
+                step=64
+            )
+            with gr.Row():
+                model_dropdown = gr.Dropdown(
+                    choices=model_names, 
+                    value='v1-5-pruned-emaonly.safetensors', 
+                    label="Select an Model", 
+                    show_label=True, 
+                    scale=4, 
+                )
+                button = gr.Button(
+                    value="Open Model Folder", 
+                    interactive=True, 
+                    scale=1, 
+                )
+                button.click(fn=open_folder, inputs=[], outputs=[])
+            lora_dropdown = gr.Dropdown(
+                choices=lora_list,
+                value='', 
+                label="Select an LoRA",
+                show_label=True, 
+            )
+        with gr.Column():
+            generate_button = gr.Button("Generate Image")
+            t2i_result = gr.Image()
 
-prompt = gr.Textbox(
-    label="Prompt",
-    show_label=False,
-    max_lines=2,
-    placeholder="Enter positive prompt"
-)
-negative_prompt = gr.Textbox(
-    label="Negative Prompt",
-    show_label=False,
-    max_lines=2,
-    placeholder="Enter Negative prompt"
-)
-step_slider = gr.Slider(
-    value=20,
-    minimum=1,
-    maximum=100,
-    label="Step",
-    show_label='True', 
-    step=1
-)
-width_slider = gr.Slider(
-    value=512,
-    minimum=256,
-    maximum=2048,
-    label="Width",
-    show_label='True', 
-    step=64
-)
-height_slider = gr.Slider(
-    value=512, 
-    minimum=256, 
-    maximum=2048, 
-    label="Height", 
-    show_label='True', 
-    step=64
-)
-model_dropdown = gr.Dropdown(
-    choices=model_names, 
-    value='v1-5-pruned-emaonly.safetensors', 
-    label="Select an Model"
-)
-open_model_button = gr.Button(
-    value="Open Model Folder", 
-)
-lora_list = [
-    ('None', ''), 
-    ('Texture', 'diffuse texture, <lora:DiffuseTexture_v11:1>'), 
-    ('Metal Texture', 'metal texture, <lora:dirtymetal_textures_1:0.8>'), 
-    ('Old school Texture', 'texture, old school, quake, <lora:Quake_Lora:1>'), 
-    ('Book', 'book, <lora:FantasyIcons_Books_noFlip:1>'), 
-    ('Gemstone', 'gemstone, <lora:FantasyIcons_Gemstones:1>'), 
-    ('pixel sprites', 'pixel, pixel art, pixelart, xiangsu, xiang su, <lora:pixel sprites:1>'), 
-    ('PixelAnimal', 'animal, pixel, pixel art, pixelart, xiangsu, xiang su, <lora:PixelAnimal:1>'), 
-    ('Pixel Weapon(axe, sword, bow)', 'weapon, no humans, pixel, pixel art, pixelart, <lora:pixel sword:1>'), 
-    ('Pixel Gun', 'gun, no humans, pixel, pixel art, pixelart, <lora:pixel gun:1>'), 
-    ('Pixel Book', 'boox,pixel, pixel art, pixelart, xiangsu, xiang su, <lora:pixel book:1>'), 
-    ('Pixel Bottle', 'bottle,pixel, pixel art, pixelart, xiangsu, xiang su, simple background, <lora:Pixel bottle:1>'), 
-    ('Pixel Isometry', '((Isometry)), pixel, pixel art, solo, <lora:Pixel_Building2:1>'), 
-]
-lora_dropdown = gr.Dropdown(
-    choices=lora_list,
-    value='', 
-    label="Select an LoRA",
-)
-t2i_result = gr.Image(
+        generate_button.click(
+                fn=txt2img.generate_image,
+                inputs=[prompt, negative_prompt, step_slider, width_slider, height_slider, model_dropdown, lora_dropdown],
+                outputs=t2i_result
+            )
+        
 
-)
-txt2img_tab = gr.Interface(
-    fn = txt2img.generate_image,
-    inputs=[prompt,negative_prompt,step_slider,width_slider,height_slider,model_dropdown,lora_dropdown],
-    outputs=[t2i_result],
-    allow_flagging='never', 
-    # outputs=["image", "image"],
-    
-)
 #################################################
 #################### Img2Img ####################
 #################################################
 
-i2i_input = gr.Image(
-    show_label=False,
-)
+with gr.Blocks() as img_to_img:
+    with gr.Row():
+        with gr.Column():
+            i2i_input = gr.Image(show_label=False)
+            i2i_prompt = gr.Textbox(
+                label="Prompt",
+                show_label=True,
+                max_lines=2,
+                placeholder="Enter positive prompt", 
+            )
+            i2i_negative_prompt = gr.Textbox(
+                label="Negative Prompt",
+                show_label=True,
+                max_lines=2,
+                placeholder="Enter Negative prompt", 
+            )
+            i2i_step_slider = gr.Slider(
+                value=20,
+                minimum=1,
+                maximum=100,
+                label="Step",
+                show_label=True, 
+                step=1
+            )
+            i2i_width_slider = gr.Slider(
+                value=512,
+                minimum=256,
+                maximum=2048,
+                label="Width",
+                show_label=True, 
+                step=64
+            )
+            i2i_height_slider = gr.Slider(
+                value=512,
+                minimum=256,
+                maximum=2048,
+                label="Height",
+                show_label=True, 
+                step=64
+            )
+            i2i_model_dropdown = gr.Dropdown(
+                choices=model_names,
+                value='v1-5-pruned-emaonly.safetensors', 
+                label="Select an Model", 
+                show_label=True, 
+            )
+            i2i_lora_dropdown = gr.Dropdown(
+                choices=lora_list,
+                value='', 
+                label="Select an LoRA",
+                show_label=True, 
+            )
+            denoising_strength_silder = gr.Slider(
+                value=0.5,
+                minimum=0,
+                maximum=1,
+                label="Denoising Strength",
+                show_label=True, 
+                step=0.05
+            )
 
-i2i_prompt = gr.Textbox(
-    label="Prompt",
-    show_label=False,
-    max_lines=2,
-    placeholder="Enter positive prompt"
-)
-i2i_negative_prompt = gr.Textbox(
-    label="Negative Prompt",
-    show_label=False,
-    max_lines=2,
-    placeholder="Enter Negative prompt"
-)
-i2i_step_slider = gr.Slider(
-    value=20,
-    minimum=1,
-    maximum=100,
-    label="Step",
-    show_label='True', 
-    step=1
-)
-i2i_width_slider = gr.Slider(
-    value=512,
-    minimum=256,
-    maximum=2048,
-    label="Width",
-    show_label='True', 
-    step=64
-)
-i2i_height_slider = gr.Slider(
-    value=512,
-    minimum=256,
-    maximum=2048,
-    label="Height",
-    show_label='True', 
-    step=64
-)
-i2i_model_dropdown = gr.Dropdown(
-    choices=model_names,
-    value='v1-5-pruned-emaonly.safetensors', 
-    label="Select an Model"
-)
-i2i_lora_list = [
-    ('None', ''), 
-    ('Texture', 'diffuse texture, <lora:DiffuseTexture_v11:1>'), 
-    ('Metal Texture', 'metal texture, <lora:dirtymetal_textures_1:0.8>'), 
-    ('Old school Texture', 'texture, old school, quake, <lora:Quake_Lora:1>'), 
-    ('Book', 'book, <lora:FantasyIcons_Books_noFlip:1>'), 
-    ('Gemstone', 'gemstone, <lora:FantasyIcons_Gemstones:1>'), 
-    ('pixel sprites', 'pixel, pixel art, pixelart, xiangsu, xiang su, <lora:pixel sprites:1>'), 
-    ('PixelAnimal', 'animal, pixel, pixel art, pixelart, xiangsu, xiang su, <lora:PixelAnimal:1>'), 
-    ('Pixel Weapon(axe, sword, bow)', 'weapon, no humans, pixel, pixel art, pixelart, <lora:pixel sword:1>'), 
-    ('Pixel Gun', 'gun, no humans, pixel, pixel art, pixelart, <lora:pixel gun:1>'), 
-    ('Pixel Book', 'boox,pixel, pixel art, pixelart, xiangsu, xiang su, <lora:pixel book:1>'), 
-    ('Pixel Bottle', 'bottle,pixel, pixel art, pixelart, xiangsu, xiang su, simple background, <lora:Pixel bottle:1>'), 
-    ('Pixel Isometry', '((Isometry)), pixel, pixel art, solo, <lora:Pixel_Building2:1>'), 
-]
-i2i_lora_dropdown = gr.Dropdown(
-    choices=lora_list,
-    value='', 
-    label="Select an LoRA",
-)
-denoising_strength_silder = gr.Slider(
-    value=0.5,
-    minimum=0,
-    maximum=1,
-    label="Denoising Strength",
-    show_label='True', 
-    step=0.05
-)
-i2i_result = gr.Image(
+        with gr.Column():
+            generate_button = gr.Button("Generate Image")
+            i2i_result = gr.Image()
 
-)
-
-img2img_tab = gr.Interface(
-    fn = img2img.generate_img2img,
-    inputs=[i2i_input,i2i_prompt,i2i_negative_prompt,i2i_step_slider,i2i_width_slider,i2i_height_slider,denoising_strength_silder,i2i_model_dropdown,i2i_lora_dropdown],
-    outputs=[i2i_result],
-    allow_flagging='never', 
-)
+        generate_button.click(
+                fn=img2img.generate_img2img,
+                inputs=[i2i_input, i2i_prompt, i2i_negative_prompt, i2i_step_slider, i2i_width_slider, i2i_height_slider, denoising_strength_silder, i2i_model_dropdown, i2i_lora_dropdown],
+                outputs=i2i_result
+            )
 
 img_viewer_tab = gr.Interface(
     fn=img_viewer.load_images_from_folder,
@@ -206,15 +203,6 @@ img_viewer_tab = gr.Interface(
     allow_flagging='never', 
 )
 
-# Background Remover 탭 추가
-# background_remover_tab = gr.Interface(
-#     fn=background_remover.background_remove,
-#     inputs=gr.Image(type="filepath", label="Upload Image"),
-#     outputs=gr.Image(label="Cropped Image"),
-#     title="Background Remover",
-#     description="Remove background using YOLOv5.", 
-#     allow_flagging='never', 
-# )
 background_remover_tab = gr.Interface(
     fn=background_remover.background_remover_and_bbox,
     inputs=gr.Image(type="filepath", label="Upload Image"),
@@ -224,8 +212,8 @@ background_remover_tab = gr.Interface(
 )
 
 demo = gr.TabbedInterface(
-    [txt2img_tab, img2img_tab, img_viewer_tab, background_remover_tab], ["txt2img", "img2img", "Image Viewer", "Background Remover"], 
-    title="Asset Geneator",
+    [text_to_img, img_to_img, img_viewer_tab, background_remover_tab], ["txt2img", "img2img", "Image Viewer", "Background Remover"], 
+    title="Asset Generator",
     theme=theme
 )
 
