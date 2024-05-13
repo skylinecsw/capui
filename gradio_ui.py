@@ -1,6 +1,7 @@
 import gradio as gr
 import txt2img
 import img2img
+import inpaint
 import os
 import img_viewer
 import background_remover
@@ -12,21 +13,36 @@ def open_folder(model_input_path):
         return
     except Exception as e:
         return f"오류가 발생했습니다: {e}"
+    
+def open_image_folder(model_input_path):
+    model_input_path = "stable-diffusion-webui\output"
+    try:
+        os.system(f'explorer "{model_input_path}"')
+        return
+    except Exception as e:
+        return f"오류가 발생했습니다: {e}"
 
-def get_model_names(folder_path, extensions):
+def get_model_names(modelfolder_path, extensions):
     try:
         # 폴더 내의 모든 파일과 폴더를 리스트로 가져옵니다.
-        all_files = os.listdir(folder_path)
+        all_files = os.listdir(modelfolder_path)
         # 지정된 확장자를 가진 파일들을 필터링합니다.
         model_names = [file for file in all_files if file.endswith(extensions)]
         return model_names
     except Exception as e:
         return f"오류가 발생했습니다: {e}"
 
-folder_path = "stable-diffusion-webui\models\Stable-diffusion"
+# def refresh_model_list(model_dropdown):
+#     global updated_model_names
+#     updated_model_names = get_model_names(modelfolder_path, extensions)
+#     gr.update(choices=updated_model_names[model_dropdown], value=None)
+
+modelfolder_path = "stable-diffusion-webui\models\Stable-diffusion"
+lorafolder_path = "stable-diffusion-webui\models\Lora"
 extensions = (".ckpt", ".safetensors")
 
-model_names = get_model_names(folder_path, extensions)
+model_names = get_model_names(modelfolder_path, extensions)
+lora_names = get_model_names(lorafolder_path, extensions)
 
 lora_list = [
         ('None', ''), 
@@ -95,14 +111,26 @@ with gr.Blocks() as text_to_img:
                     value='v1-5-pruned-emaonly.safetensors', 
                     label="Select an Model", 
                     show_label=True, 
-                    scale=4, 
+                    scale=5, 
                 )
-                button = gr.Button(
+                model_open_button = gr.Button(
                     value="Open Model Folder", 
                     interactive=True, 
-                    scale=1, 
                 )
-                button.click(fn=open_folder, inputs=[], outputs=[])
+                model_open_button.click(
+                    fn=open_folder, 
+                    inputs=[], 
+                    outputs=[]
+                    )
+                # modelrefresh_button = gr.Button(
+                #     value="Refresh", 
+                #     interactive=True, 
+                # )
+                # modelrefresh_button.click(
+                #     fn=, 
+                #     inputs=, 
+                #     outputs=
+                # )
             lora_dropdown = gr.Dropdown(
                 choices=lora_list,
                 value='', 
@@ -164,25 +192,33 @@ with gr.Blocks() as img_to_img:
                 show_label=True, 
                 step=64
             )
-            i2i_model_dropdown = gr.Dropdown(
-                choices=model_names,
-                value='v1-5-pruned-emaonly.safetensors', 
-                label="Select an Model", 
-                show_label=True, 
-            )
-            i2i_lora_dropdown = gr.Dropdown(
-                choices=lora_list,
-                value='', 
-                label="Select an LoRA",
-                show_label=True, 
-            )
             denoising_strength_silder = gr.Slider(
-                value=0.5,
+                value=0.6,
                 minimum=0,
                 maximum=1,
                 label="Denoising Strength",
                 show_label=True, 
                 step=0.05
+            )
+            with gr.Row():
+                i2i_model_dropdown = gr.Dropdown(
+                    choices=model_names,
+                    value='v1-5-pruned-emaonly.safetensors', 
+                    label="Select an Model", 
+                    show_label=True, 
+                    scale=4, 
+                )
+                model_open_button = gr.Button(
+                    value="Open Model Folder", 
+                    interactive=True, 
+                    scale=1, 
+                )
+                model_open_button.click(fn=open_folder, inputs=[], outputs=[])
+            i2i_lora_dropdown = gr.Dropdown(
+                choices=lora_list,
+                value='', 
+                label="Select an LoRA",
+                show_label=True, 
             )
 
         with gr.Column():
@@ -195,33 +231,136 @@ with gr.Blocks() as img_to_img:
             outputs=i2i_result
             )
         
+#################################################
+#################### Inpaint ####################
+#################################################
+        
+# with gr.Blocks() as inpaint_image:
+#     with gr.Row():
+#         with gr.Column():
+#             in_input = gr.Image(show_label=False)
+#             in_mask = gr.ImageMask(show_label=False)
+#             in_prompt = gr.Textbox(
+#                 label="Prompt",
+#                 show_label=True,
+#                 max_lines=2,
+#                 placeholder="Enter positive prompt", 
+#             )
+#             in_negative_prompt = gr.Textbox(
+#                 label="Negative Prompt",
+#                 show_label=True,
+#                 max_lines=2,
+#                 placeholder="Enter Negative prompt", 
+#             )
+#             in_step_slider = gr.Slider(
+#                 value=20,
+#                 minimum=1,
+#                 maximum=100,
+#                 label="Step",
+#                 show_label=True, 
+#                 step=1
+#             )
+#             in_width_slider = gr.Slider(
+#                 value=512,
+#                 minimum=256,
+#                 maximum=2048,
+#                 label="Width",
+#                 show_label=True, 
+#                 step=64
+#             )
+#             in_height_slider = gr.Slider(
+#                 value=512,
+#                 minimum=256,
+#                 maximum=2048,
+#                 label="Height",
+#                 show_label=True, 
+#                 step=64
+#             )
+#             denoising_strength_silder = gr.Slider(
+#                 value=0.6,
+#                 minimum=0,
+#                 maximum=1,
+#                 label="Denoising Strength",
+#                 show_label=True, 
+#                 step=0.05
+#             )
+#             with gr.Row():
+#                 in_model_dropdown = gr.Dropdown(
+#                     choices=model_names,
+#                     value='v1-5-pruned-emaonly.safetensors', 
+#                     label="Select an Model", 
+#                     show_label=True, 
+#                     scale=4, 
+#                 )
+#                 model_open_button = gr.Button(
+#                     value="Open Model Folder", 
+#                     interactive=True, 
+#                     scale=1, 
+#                 )
+#                 model_open_button.click(fn=open_folder, inputs=[], outputs=[])
+#             in_lora_dropdown = gr.Dropdown(
+#                 choices=lora_list,
+#                 value='', 
+#                 label="Select an LoRA",
+#                 show_label=True, 
+#             )
+
+#         with gr.Column():
+#             generate_button = gr.Button("Generate Image")
+#             i2i_result = gr.Image()
+
+#         generate_button.click(
+#             fn=inpaint.generate_inpaint,
+#             inputs=[in_input, in_prompt, in_negative_prompt, in_step_slider, in_width_slider, in_height_slider, denoising_strength_silder, in_model_dropdown, in_lora_dropdown],
+#             outputs=i2i_result
+#             )
+        
 ################################################
 ################# Image Viewer #################
 ################################################
 
 with gr.Blocks() as img_viewer_tab:
     with gr.Row():
-        with gr.Row():
-            folder_dropdown = gr.Dropdown(
-                label="Folder Path",
+        with gr.Column():
+            t2i_folder_dropdown = gr.Dropdown(
+                label="txt2img Folder Path",
                 choices=img_viewer.get_folders_in_directory("stable-diffusion-webui/output/txt2img-images"),
-                scale=5, 
             )
-            refresh_button = gr.Button("Refresh", scale=1)
+            i2i_folder_dropdown = gr.Dropdown(
+                label="img2img Folder Path",
+                choices=img_viewer.get_folders_in_directory("stable-diffusion-webui/output/img2img-images"),
+            )
+            t2i_refresh_button = gr.Button("txt2img Images Refresh")
+            i2i_refresh_button = gr.Button("img2img Images Refresh")
+            button = gr.Button(
+                value="Open Image Folder", 
+                interactive=True, 
+            )
+            button.click(fn=open_image_folder, inputs=[], outputs=[])
         with gr.Column():
             img_view_result = gr.Gallery(label="Images")
 
-        folder_dropdown.change(
+        t2i_folder_dropdown.change(
             fn=img_viewer.load_images_from_folder,
-            inputs=folder_dropdown, 
+            inputs=t2i_folder_dropdown, 
             outputs=img_view_result, 
         )
-        refresh_button.click(
+        i2i_folder_dropdown.change(
+            fn=img_viewer.load_i2i_images_from_folder,
+            inputs=i2i_folder_dropdown, 
+            outputs=img_view_result, 
+        )
+        t2i_refresh_button.click(
             fn=img_viewer.load_images_from_folder,
-            inputs=folder_dropdown,
+            inputs=t2i_folder_dropdown, 
             outputs=img_view_result
         )
-
+        i2i_refresh_button.click(
+            fn=img_viewer.load_i2i_images_from_folder,
+            inputs=i2i_folder_dropdown, 
+            outputs=img_view_result
+        )
+        
 ################################################
 ############## Background Remover ##############
 ################################################
