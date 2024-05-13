@@ -114,9 +114,9 @@ with gr.Blocks() as text_to_img:
             t2i_result = gr.Image()
 
         generate_button.click(
-                fn=txt2img.generate_image,
-                inputs=[prompt, negative_prompt, step_slider, width_slider, height_slider, model_dropdown, lora_dropdown],
-                outputs=t2i_result
+            fn=txt2img.generate_image,
+            inputs=[prompt, negative_prompt, step_slider, width_slider, height_slider, model_dropdown, lora_dropdown],
+            outputs=t2i_result
             )
         
 
@@ -190,10 +190,14 @@ with gr.Blocks() as img_to_img:
             i2i_result = gr.Image()
 
         generate_button.click(
-                fn=img2img.generate_img2img,
-                inputs=[i2i_input, i2i_prompt, i2i_negative_prompt, i2i_step_slider, i2i_width_slider, i2i_height_slider, denoising_strength_silder, i2i_model_dropdown, i2i_lora_dropdown],
-                outputs=i2i_result
+            fn=img2img.generate_img2img,
+            inputs=[i2i_input, i2i_prompt, i2i_negative_prompt, i2i_step_slider, i2i_width_slider, i2i_height_slider, denoising_strength_silder, i2i_model_dropdown, i2i_lora_dropdown],
+            outputs=i2i_result
             )
+        
+################################################
+################# Image Viewer #################
+################################################
 
 with gr.Blocks() as img_viewer_tab:
     with gr.Row():
@@ -217,14 +221,36 @@ with gr.Blocks() as img_viewer_tab:
             inputs=folder_dropdown,
             outputs=img_view_result
         )
-        
-background_remover_tab = gr.Interface(
-    fn=background_remover.background_remover_and_bbox,
-    inputs=gr.Image(type="filepath", label="Upload Image"),
-    outputs=[gr.Image(label="Image with Bounding Boxes"), gr.Image(label="Cropped Image")],
-    title="Background Remover",
-    description="Detect objects and remove background using YOLOv5."
-)
+
+################################################
+############## Background Remover ##############
+################################################
+
+with gr.Blocks() as background_remover_tab:
+    with gr.Row():
+        with gr.Column():
+            yolo_image = gr.Image(
+                type="filepath", 
+                label="Upload Image"
+                )
+        with gr.Column():
+            remove_button = gr.Button("Start")
+            removed_image = [gr.Image(
+                label="Image with Bounding Boxes"
+            ), 
+            gr.Image(
+                label="Cropped Image"
+            )
+            ]
+        remove_button.click(
+                fn=background_remover.background_remover_and_bbox,
+                inputs=yolo_image,
+                outputs=removed_image,
+            )
+
+#################################################
+################### Interface ###################
+#################################################
 
 demo = gr.TabbedInterface(
     [text_to_img, img_to_img, img_viewer_tab, background_remover_tab], ["txt2img", "img2img", "Image Viewer", "Background Remover"], 
