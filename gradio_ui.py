@@ -49,6 +49,7 @@ theme = gr.themes.Monochrome()
 #################################################
 #################### Txt2Img ####################
 #################################################
+
 with gr.Blocks() as text_to_img:
     with gr.Row():
         with gr.Column():
@@ -194,15 +195,29 @@ with gr.Blocks() as img_to_img:
                 outputs=i2i_result
             )
 
-img_viewer_tab = gr.Interface(
-    fn=img_viewer.load_images_from_folder,
-    inputs=gr.Dropdown(label="Folder Path", choices=img_viewer.get_folders_in_directory("stable-diffusion-webui/output/txt2img-images")),
-    outputs=gr.Gallery(label="Images"),
-    title="Image Viewer",
-    description="Load and display images from a folder.", 
-    allow_flagging='never', 
-)
+with gr.Blocks() as img_viewer_tab:
+    with gr.Row():
+        with gr.Row():
+            folder_dropdown = gr.Dropdown(
+                label="Folder Path",
+                choices=img_viewer.get_folders_in_directory("stable-diffusion-webui/output/txt2img-images"),
+                scale=5, 
+            )
+            refresh_button = gr.Button("Refresh", scale=1)
+        with gr.Column():
+            img_view_result = gr.Gallery(label="Images")
 
+        folder_dropdown.change(
+            fn=img_viewer.load_images_from_folder,
+            inputs=folder_dropdown, 
+            outputs=img_view_result, 
+        )
+        refresh_button.click(
+            fn=img_viewer.load_images_from_folder,
+            inputs=folder_dropdown,
+            outputs=img_view_result
+        )
+        
 background_remover_tab = gr.Interface(
     fn=background_remover.background_remover_and_bbox,
     inputs=gr.Image(type="filepath", label="Upload Image"),
