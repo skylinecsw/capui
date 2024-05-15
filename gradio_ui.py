@@ -1,10 +1,24 @@
 import gradio as gr
 import txt2img
 import img2img
-import inpaint
+# import inpaint
 import os
 import img_viewer
 import background_remover
+import api_client
+
+## 아래 코드들 사용해보기
+## 
+## 아래 코드를 이용해 progress bar 만들어보기
+## def progress():
+##     return api.util_wait_for_ready()
+##
+## txt2img.py에서 이미지를 생성 버튼을 누를 때마다 모델이 바뀌는 것이 아닌 드롭다운에서 모델을 선택하면 바뀌는 것으로 아래 코드를 이용하여 수정
+## api_client.api.util_set_model()
+##
+## 아래 코드를 이용하여 model refresh 구현해보기
+## api_client.api.refresh_checkpoints()
+##
 
 def open_folder(model_input_path):
     model_input_path = "stable-diffusion-webui\models\Stable-diffusion"
@@ -32,16 +46,11 @@ def get_model_names(modelfolder_path, extensions):
     except Exception as e:
         return f"오류가 발생했습니다: {e}"
 
-# def refresh_model_list(model_dropdown):
-#     global updated_model_names
-#     updated_model_names = get_model_names(modelfolder_path, extensions)
-#     gr.update(choices=updated_model_names[model_dropdown], value=None)
-
-modelfolder_path = "stable-diffusion-webui\models\Stable-diffusion"
 lorafolder_path = "stable-diffusion-webui\models\Lora"
 extensions = (".ckpt", ".safetensors")
 
-model_names = get_model_names(modelfolder_path, extensions)
+model_names = api_client.api.util_get_model_names()
+current_model = api_client.api.util_get_current_model()
 lora_names = get_model_names(lorafolder_path, extensions)
 
 lora_list = [
@@ -108,7 +117,7 @@ with gr.Blocks() as text_to_img:
             with gr.Row():
                 model_dropdown = gr.Dropdown(
                     choices=model_names, 
-                    value='v1-5-pruned-emaonly.safetensors', 
+                    value="v1-5-pruned-emaonly.safetensors [6ce0161689]", 
                     label="Select an Model", 
                     show_label=True, 
                     scale=5, 
@@ -122,15 +131,6 @@ with gr.Blocks() as text_to_img:
                     inputs=[], 
                     outputs=[]
                     )
-                # modelrefresh_button = gr.Button(
-                #     value="Refresh", 
-                #     interactive=True, 
-                # )
-                # modelrefresh_button.click(
-                #     fn=, 
-                #     inputs=, 
-                #     outputs=
-                # )
             lora_dropdown = gr.Dropdown(
                 choices=lora_list,
                 value='', 
@@ -203,7 +203,7 @@ with gr.Blocks() as img_to_img:
             with gr.Row():
                 i2i_model_dropdown = gr.Dropdown(
                     choices=model_names,
-                    value='v1-5-pruned-emaonly.safetensors', 
+                    value="v1-5-pruned-emaonly.safetensors [6ce0161689]", 
                     label="Select an Model", 
                     show_label=True, 
                     scale=4, 
@@ -234,86 +234,6 @@ with gr.Blocks() as img_to_img:
 #################################################
 #################### Inpaint ####################
 #################################################
-        
-# with gr.Blocks() as inpaint_image:
-#     with gr.Row():
-#         with gr.Column():
-#             in_input = gr.Image(show_label=False)
-#             in_mask = gr.ImageMask(show_label=False)
-#             in_prompt = gr.Textbox(
-#                 label="Prompt",
-#                 show_label=True,
-#                 max_lines=2,
-#                 placeholder="Enter positive prompt", 
-#             )
-#             in_negative_prompt = gr.Textbox(
-#                 label="Negative Prompt",
-#                 show_label=True,
-#                 max_lines=2,
-#                 placeholder="Enter Negative prompt", 
-#             )
-#             in_step_slider = gr.Slider(
-#                 value=20,
-#                 minimum=1,
-#                 maximum=100,
-#                 label="Step",
-#                 show_label=True, 
-#                 step=1
-#             )
-#             in_width_slider = gr.Slider(
-#                 value=512,
-#                 minimum=256,
-#                 maximum=2048,
-#                 label="Width",
-#                 show_label=True, 
-#                 step=64
-#             )
-#             in_height_slider = gr.Slider(
-#                 value=512,
-#                 minimum=256,
-#                 maximum=2048,
-#                 label="Height",
-#                 show_label=True, 
-#                 step=64
-#             )
-#             denoising_strength_silder = gr.Slider(
-#                 value=0.6,
-#                 minimum=0,
-#                 maximum=1,
-#                 label="Denoising Strength",
-#                 show_label=True, 
-#                 step=0.05
-#             )
-#             with gr.Row():
-#                 in_model_dropdown = gr.Dropdown(
-#                     choices=model_names,
-#                     value='v1-5-pruned-emaonly.safetensors', 
-#                     label="Select an Model", 
-#                     show_label=True, 
-#                     scale=4, 
-#                 )
-#                 model_open_button = gr.Button(
-#                     value="Open Model Folder", 
-#                     interactive=True, 
-#                     scale=1, 
-#                 )
-#                 model_open_button.click(fn=open_folder, inputs=[], outputs=[])
-#             in_lora_dropdown = gr.Dropdown(
-#                 choices=lora_list,
-#                 value='', 
-#                 label="Select an LoRA",
-#                 show_label=True, 
-#             )
-
-#         with gr.Column():
-#             generate_button = gr.Button("Generate Image")
-#             i2i_result = gr.Image()
-
-#         generate_button.click(
-#             fn=inpaint.generate_inpaint,
-#             inputs=[in_input, in_prompt, in_negative_prompt, in_step_slider, in_width_slider, in_height_slider, denoising_strength_silder, in_model_dropdown, in_lora_dropdown],
-#             outputs=i2i_result
-#             )
         
 ################################################
 ################# Image Viewer #################

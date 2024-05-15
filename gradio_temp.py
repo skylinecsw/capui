@@ -233,3 +233,122 @@ demo = gr.TabbedInterface(
 )
 
 demo.launch()
+
+#################################################
+#################### Inpaint ####################
+#################################################
+        
+# with gr.Blocks() as inpaint_image:
+#     with gr.Row():
+#         with gr.Column():
+#             in_input = gr.Image(show_label=False)
+#             in_mask = gr.ImageMask(show_label=False)
+#             in_prompt = gr.Textbox(
+#                 label="Prompt",
+#                 show_label=True,
+#                 max_lines=2,
+#                 placeholder="Enter positive prompt", 
+#             )
+#             in_negative_prompt = gr.Textbox(
+#                 label="Negative Prompt",
+#                 show_label=True,
+#                 max_lines=2,
+#                 placeholder="Enter Negative prompt", 
+#             )
+#             in_step_slider = gr.Slider(
+#                 value=20,
+#                 minimum=1,
+#                 maximum=100,
+#                 label="Step",
+#                 show_label=True, 
+#                 step=1
+#             )
+#             in_width_slider = gr.Slider(
+#                 value=512,
+#                 minimum=256,
+#                 maximum=2048,
+#                 label="Width",
+#                 show_label=True, 
+#                 step=64
+#             )
+#             in_height_slider = gr.Slider(
+#                 value=512,
+#                 minimum=256,
+#                 maximum=2048,
+#                 label="Height",
+#                 show_label=True, 
+#                 step=64
+#             )
+#             denoising_strength_silder = gr.Slider(
+#                 value=0.6,
+#                 minimum=0,
+#                 maximum=1,
+#                 label="Denoising Strength",
+#                 show_label=True, 
+#                 step=0.05
+#             )
+#             with gr.Row():
+#                 in_model_dropdown = gr.Dropdown(
+#                     choices=model_names,
+#                     value='v1-5-pruned-emaonly.safetensors', 
+#                     label="Select an Model", 
+#                     show_label=True, 
+#                     scale=4, 
+#                 )
+#                 model_open_button = gr.Button(
+#                     value="Open Model Folder", 
+#                     interactive=True, 
+#                     scale=1, 
+#                 )
+#                 model_open_button.click(fn=open_folder, inputs=[], outputs=[])
+#             in_lora_dropdown = gr.Dropdown(
+#                 choices=lora_list,
+#                 value='', 
+#                 label="Select an LoRA",
+#                 show_label=True, 
+#             )
+
+#         with gr.Column():
+#             generate_button = gr.Button("Generate Image")
+#             i2i_result = gr.Image()
+
+#         generate_button.click(
+#             fn=inpaint.generate_inpaint,
+#             inputs=[in_input, in_prompt, in_negative_prompt, in_step_slider, in_width_slider, in_height_slider, denoising_strength_silder, in_model_dropdown, in_lora_dropdown],
+#             outputs=i2i_result
+#             )
+
+
+
+
+# txt2img.py
+# in def generate_image
+
+# # Object Detection YOLOv5
+#     # Convert image to numpy array
+#     img_np = np.array(result.image)
+#     # Use YOLOv5 for object detection
+#     results = model(img_np)
+#     # Draw bounding boxes on the image
+#     results.render()
+#     # Convert image back to PIL format
+#     img_with_boxes = Image.fromarray(results.ims[0])
+
+#     # # Load the original image
+#     # image = result.image
+#     # img = cv2.imread(image)
+
+#     # # Extract bounding boxes
+#     # boxes = results[0].boxes.xyxy.tolist()
+
+#     # # Iterate through the bounding boxes
+#     # for i, box in enumerate(boxes):
+#     #     x1, y1, x2, y2 = box
+#     #     # Crop the object using the bounding box coordinates
+#     #     ultralytics_crop_object = img[int(y1):int(y2), int(x1):int(x2)]
+#     #     # Save the cropped object as an image
+#     #     cv2.imwrite('ultralytics_crop_' + str(i) + '.png', ultralytics_crop_object)
+
+#     # crops = results.crop(save=True)
+
+#     # return result.image, img_with_boxes

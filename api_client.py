@@ -20,9 +20,8 @@ api.set_auth('username', 'password')
 def change_model(model):
     api.util_set_model(model)
 
-def show_progress():
-    api.get_progress()
+def get_generate_progress():
+    return api.get_progress()
 
-def get_model_list():
-    models = api.util_get_model_names
-    return models
+def progress():
+    return api.util_wait_for_ready()
