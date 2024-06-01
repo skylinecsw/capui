@@ -2,3 +2,4 @@ webuiapi
 attr
 gradio
 aiohttp
+rembg
