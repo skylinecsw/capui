@@ -55,6 +55,7 @@ lora_names = get_model_names(lorafolder_path, extensions)
 
 lora_list = [
         ('None', ''), 
+        ('Texture_1', 'texture,  <lora:texture_1:1>'), 
         ('Texture', 'diffuse texture, <lora:DiffuseTexture_v11:1>'), 
         ('Metal Texture', 'metal texture, <lora:dirtymetal_textures_1:0.8>'), 
         ('Old school Texture', 'texture, old school, quake, <lora:Quake_Lora:1>'), 
