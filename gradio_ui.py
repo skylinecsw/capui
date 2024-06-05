@@ -7,6 +7,7 @@ import img_viewer
 import background_remover
 import api_client
 
+##
 ## 아래 코드들 사용해보기
 ## 
 ## 아래 코드를 이용해 progress bar 만들어보기
@@ -20,6 +21,11 @@ import api_client
 ## api_client.api.refresh_checkpoints()
 ##
 ## Unity Folder로 이미지 이동하는 코드 추가 필요
+##
+
+def add_loras(lora_name):
+    lora = "<lora:" + lora_name + ":1>"
+    return lora
 
 def open_folder(model_input_path):
     model_input_path = "stable-diffusion-webui\models\Stable-diffusion"
@@ -31,6 +37,14 @@ def open_folder(model_input_path):
     
 def open_image_folder(model_input_path):
     model_input_path = "stable-diffusion-webui\output"
+    try:
+        os.system(f'explorer "{model_input_path}"')
+        return
+    except Exception as e:
+        return f"오류가 발생했습니다: {e}"
+
+def open_removed_folder(model_input_path):
+    model_input_path = "background-removed-images"
     try:
         os.system(f'explorer "{model_input_path}"')
         return
@@ -52,11 +66,14 @@ extensions = (".ckpt", ".safetensors")
 
 model_names = api_client.api.util_get_model_names()
 current_model = api_client.api.util_get_current_model()
-lora_names = get_model_names(lorafolder_path, extensions)
+# lora_names = get_model_names(lorafolder_path, extensions)
+lora_names = api_client.api.util_get_lora_names()
 
 lora_list = [
         ('None', ''), 
         ('Texture_1', 'texture,  <lora:texture_1:1>'), 
+        ('Sprite_1_epoch_1', 'sprite,  <lora:sprite_1-000001:0.8>'), 
+        ('Sprite_1_epoch_2', 'sprite,  <lora:sprite_1:0.8>'), 
         ('Texture', 'diffuse texture, <lora:DiffuseTexture_v11:1>'), 
         ('Metal Texture', 'metal texture, <lora:dirtymetal_textures_1:0.8>'), 
         ('Old school Texture', 'texture, old school, quake, <lora:Quake_Lora:1>'), 
@@ -119,7 +136,7 @@ with gr.Blocks() as text_to_img:
             with gr.Row():
                 model_dropdown = gr.Dropdown(
                     choices=model_names, 
-                    value="v1-5-pruned-emaonly.safetensors [6ce0161689]", 
+                    value="anyloraCheckpoint_bakedvaeBlessedFp16.safetensors [5353d90e0c]", 
                     label="Select an Model", 
                     show_label=True, 
                     scale=5, 
@@ -134,10 +151,16 @@ with gr.Blocks() as text_to_img:
                     outputs=[]
                     )
             lora_dropdown = gr.Dropdown(
-                choices=lora_list,
-                value='', 
+                # choices=lora_list,
+                choices=lora_names,
+                # value='', 
                 label="Select an LoRA",
                 show_label=True, 
+            )
+            lora_dropdown.change(
+            fn=add_loras,
+            inputs=lora_dropdown, 
+            outputs=prompt, 
             )
         with gr.Column():
             generate_button = gr.Button("Generate Image")
@@ -205,7 +228,8 @@ with gr.Blocks() as img_to_img:
             with gr.Row():
                 i2i_model_dropdown = gr.Dropdown(
                     choices=model_names,
-                    value="v1-5-pruned-emaonly.safetensors [6ce0161689]", 
+                    # value="v1-5-pruned-emaonly.safetensors [6ce0161689]", 
+                    value="anyloraCheckpoint_bakedvaeBlessedFp16.safetensors [5353d90e0c]", 
                     label="Select an Model", 
                     show_label=True, 
                     scale=4, 
@@ -217,12 +241,17 @@ with gr.Blocks() as img_to_img:
                 )
                 model_open_button.click(fn=open_folder, inputs=[], outputs=[])
             i2i_lora_dropdown = gr.Dropdown(
-                choices=lora_list,
-                value='', 
+                # choices=lora_list,
+                choices=lora_names,
+                # value='', 
                 label="Select an LoRA",
                 show_label=True, 
             )
-
+            i2i_lora_dropdown.change(
+            fn=add_loras,
+            inputs=i2i_lora_dropdown, 
+            outputs=i2i_prompt, 
+            )
         with gr.Column():
             generate_button = gr.Button("Generate Image")
             i2i_result = gr.Image()
@@ -252,8 +281,14 @@ with gr.Blocks() as img_viewer_tab:
                 label="img2img Folder Path",
                 choices=img_viewer.get_folders_in_directory("stable-diffusion-webui/output/img2img-images"),
             )
-            t2i_refresh_button = gr.Button("txt2img Images Refresh")
-            i2i_refresh_button = gr.Button("img2img Images Refresh")
+            bgremoved_folder_dropdown = gr.Dropdown(
+                label="Background removed Folder Path",
+                choices=img_viewer.get_folders_in_directory("background-removed-images"),
+            )
+            with gr.Row():
+                t2i_refresh_button = gr.Button("txt2img Images Refresh")
+                i2i_refresh_button = gr.Button("img2img Images Refresh")
+                bgremoved_refresh_button = gr.Button("Background removed Images Refresh")
             button = gr.Button(
                 value="Open Image Folder", 
                 interactive=True, 
@@ -272,6 +307,11 @@ with gr.Blocks() as img_viewer_tab:
             inputs=i2i_folder_dropdown, 
             outputs=img_view_result, 
         )
+        bgremoved_folder_dropdown.change(
+            fn=img_viewer.load_bgremoved_images_from_folder,
+            inputs=bgremoved_folder_dropdown, 
+            outputs=img_view_result, 
+        )
         t2i_refresh_button.click(
             fn=img_viewer.load_images_from_folder,
             inputs=t2i_folder_dropdown, 
@@ -280,6 +320,11 @@ with gr.Blocks() as img_viewer_tab:
         i2i_refresh_button.click(
             fn=img_viewer.load_i2i_images_from_folder,
             inputs=i2i_folder_dropdown, 
+            outputs=img_view_result
+        )
+        bgremoved_refresh_button.click(
+            fn=img_viewer.load_bgremoved_images_from_folder,
+            inputs=bgremoved_folder_dropdown, 
             outputs=img_view_result
         )
         
@@ -294,13 +339,18 @@ with gr.Blocks() as background_remover_tab:
                 type="filepath", 
                 label="Upload Image"
                 )
+            button = gr.Button(
+                value="Open Background removed Folder", 
+                interactive=True, 
+            )
+            button.click(fn=open_removed_folder, inputs=[], outputs=[])
         with gr.Column():
             remove_button = gr.Button("Start")
             removed_image = [gr.Image(
                 label="Image with Bounding Boxes"
             ), 
             gr.Image(
-                label="Cropped Image"
+                label="Cropped & Background Removed Image"
             )
             ]
         remove_button.click(
@@ -314,7 +364,7 @@ with gr.Blocks() as background_remover_tab:
 #################################################
 
 demo = gr.TabbedInterface(
-    [text_to_img, img_to_img, img_viewer_tab, background_remover_tab], ["txt2img", "img2img", "Image Viewer", "Background Remover"], 
+    [text_to_img, img_to_img, background_remover_tab, img_viewer_tab], ["txt2img", "img2img", "Background Remover", "Image Viewer"], 
     title="Asset Generator",
     theme=theme
 )
