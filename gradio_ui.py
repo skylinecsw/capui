@@ -19,6 +19,7 @@ import api_client
 ## 아래 코드를 이용하여 model refresh 구현해보기
 ## api_client.api.refresh_checkpoints()
 ##
+## Unity Folder로 이미지 이동하는 코드 추가 필요
 
 def open_folder(model_input_path):
     model_input_path = "stable-diffusion-webui\models\Stable-diffusion"
@@ -259,7 +260,7 @@ with gr.Blocks() as img_viewer_tab:
             )
             button.click(fn=open_image_folder, inputs=[], outputs=[])
         with gr.Column():
-            img_view_result = gr.Gallery(label="Images")
+            img_view_result = gr.Gallery(label="Images", interactive=False)
 
         t2i_folder_dropdown.change(
             fn=img_viewer.load_images_from_folder,
