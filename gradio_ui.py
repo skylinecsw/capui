@@ -5,6 +5,7 @@ import img2img
 import os
 import img_viewer
 import background_remover
+import background_remover_2
 import api_client
 
 ##
@@ -354,7 +355,7 @@ with gr.Blocks() as background_remover_tab:
             )
             ]
         remove_button.click(
-                fn=background_remover.background_remover_and_bbox,
+                fn=background_remover_2.background_remover_and_bbox,
                 inputs=yolo_image,
                 outputs=removed_image,
             )

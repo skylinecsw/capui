@@ -5,9 +5,15 @@ Texture
 768 images
 32720 steps
 2 epochs
+loss 0.1144
 3h 08m 19s
 
 - 2
+841 images
+17320 steps
+2 epochs
+loss 0.1164
+2h 30m
 
 _________________________________________________
 - Sprite

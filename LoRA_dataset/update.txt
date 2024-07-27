@@ -1,4 +1,20 @@
-
+﻿전에 사진들 몇개 수정
+concrete_wall 캡션추가
+금간: cracked
+사진추가(paper, grass)
+paper 캡션
+구겨진: creased
+선이 그어진: drawing_lines
+grass 캡션
+꽃 포함: flower
+sand 대거 수정
+캡션 추가
+바닷가: beach
+흑백: black_and_white
+asphalt 대거 수정
+rooftop 삭제
+sprite 추가
+----------------------------------------------------------------------
 캡션 수정
 전에 사진들 몇개 수정
 사진 추가(gravel, metal,rock texture, wood texture)
