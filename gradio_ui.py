@@ -1,12 +1,13 @@
 import gradio as gr
 import txt2img
 import img2img
-# import inpaint
+import inpaint
 import os
 import img_viewer
-import background_remover
-import background_remover_2
+import background_remover_yolo
+import background_remover_florence
 import api_client
+
 
 ##
 ## 아래 코드들 사용해보기
@@ -218,7 +219,7 @@ with gr.Blocks() as img_to_img:
                 show_label=True, 
                 step=64
             )
-            denoising_strength_silder = gr.Slider(
+            i2i_denoising_strength_silder = gr.Slider(
                 value=0.6,
                 minimum=0,
                 maximum=1,
@@ -259,14 +260,102 @@ with gr.Blocks() as img_to_img:
 
         generate_button.click(
             fn=img2img.generate_img2img,
-            inputs=[i2i_input, i2i_prompt, i2i_negative_prompt, i2i_step_slider, i2i_width_slider, i2i_height_slider, denoising_strength_silder, i2i_model_dropdown, i2i_lora_dropdown],
+            inputs=[i2i_input, i2i_prompt, i2i_negative_prompt, i2i_step_slider, i2i_width_slider, i2i_height_slider, i2i_denoising_strength_silder, i2i_model_dropdown, i2i_lora_dropdown],
             outputs=i2i_result
             )
         
 #################################################
 #################### Inpaint ####################
 #################################################
-        
+
+with gr.Blocks() as inpaint_tab:
+    with gr.Row():
+        with gr.Column():
+            in_mask = gr.ImageMask(
+                label="Inpaint", 
+                show_label=True, 
+            )
+            in_prompt = gr.Textbox(
+                label="Prompt",
+                show_label=True,
+                max_lines=2,
+                placeholder="Enter positive prompt", 
+            )
+            in_negative_prompt = gr.Textbox(
+                label="Negative Prompt",
+                show_label=True,
+                max_lines=2,
+                placeholder="Enter Negative prompt", 
+            )
+            in_step_slider = gr.Slider(
+                value=20,
+                minimum=1,
+                maximum=100,
+                label="Step",
+                show_label=True, 
+                step=1
+            )
+            in_width_slider = gr.Slider(
+                value=512,
+                minimum=256,
+                maximum=2048,
+                label="Width",
+                show_label=True, 
+                step=64
+            )
+            in_height_slider = gr.Slider(
+                value=512,
+                minimum=256,
+                maximum=2048,
+                label="Height",
+                show_label=True, 
+                step=64
+            )
+            in_denoising_strength_silder = gr.Slider(
+                value=0.6,
+                minimum=0,
+                maximum=1,
+                label="Denoising Strength",
+                show_label=True, 
+                step=0.05
+            )
+            with gr.Row():
+                in_model_dropdown = gr.Dropdown(
+                    choices=model_names,
+                    # value="v1-5-pruned-emaonly.safetensors [6ce0161689]", 
+                    value="anyloraCheckpoint_bakedvaeBlessedFp16.safetensors [5353d90e0c]", 
+                    label="Select an Model", 
+                    show_label=True, 
+                    scale=4, 
+                )
+                model_open_button = gr.Button(
+                    value="Open Model Folder", 
+                    interactive=True, 
+                    scale=1, 
+                )
+                model_open_button.click(fn=open_folder, inputs=[], outputs=[])
+            in_lora_dropdown = gr.Dropdown(
+                # choices=lora_list,
+                choices=lora_names,
+                # value='', 
+                label="Select an LoRA",
+                show_label=True, 
+            )
+            in_lora_dropdown.change(
+            fn=add_loras,
+            inputs=in_lora_dropdown, 
+            outputs=in_prompt, 
+            )
+        with gr.Column():
+            generate_button = gr.Button("Generate Image")
+            in_result = gr.Image()
+
+        generate_button.click(
+            fn=inpaint.generate_inpaint, 
+            inputs=[in_mask, in_prompt, in_negative_prompt, in_step_slider, in_width_slider, in_height_slider, in_denoising_strength_silder, in_model_dropdown, in_lora_dropdown],
+            outputs=in_result
+            )
+
 ################################################
 ################# Image Viewer #################
 ################################################
@@ -328,7 +417,7 @@ with gr.Blocks() as img_viewer_tab:
             inputs=bgremoved_folder_dropdown, 
             outputs=img_view_result
         )
-        
+
 ################################################
 ############## Background Remover ##############
 ################################################
@@ -355,7 +444,8 @@ with gr.Blocks() as background_remover_tab:
             )
             ]
         remove_button.click(
-                fn=background_remover_2.background_remover_and_bbox,
+                # fn=background_remover_yolo.background_remover_and_bbox,
+                fn=background_remover_florence.background_remover_and_bbox,
                 inputs=yolo_image,
                 outputs=removed_image,
             )
@@ -365,7 +455,7 @@ with gr.Blocks() as background_remover_tab:
 #################################################
 
 demo = gr.TabbedInterface(
-    [text_to_img, img_to_img, background_remover_tab, img_viewer_tab], ["txt2img", "img2img", "Background Remover", "Image Viewer"], 
+    [text_to_img, img_to_img, inpaint_tab, background_remover_tab, img_viewer_tab], ["txt2img", "img2img", "Inpaint", "Background Remover", "Image Viewer"], 
     title="Asset Generator",
     theme=theme
 )
