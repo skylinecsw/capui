@@ -4,10 +4,11 @@ import img2img
 import inpaint
 import os
 import img_viewer
-import background_remover_yolo
+# import background_remover_yolo
 import background_remover_florence
 import api_client
 
+from googletrans import Translator
 
 ##
 ## 아래 코드들 사용해보기
@@ -90,7 +91,36 @@ lora_list = [
         ('Pixel Isometry', '((Isometry)), pixel, pixel art, solo, <lora:Pixel_Building2:1>'), 
         ]
 
+language_options = {
+    'auto': 'Auto Detection',
+    'zh-cn': 'Chinese(Simplified)',
+    'zh-tw': 'Chinese(traditional)',
+    'en': 'English',
+    'fr': 'French',
+    'de': 'German',
+    'ja': 'Japanese',
+    'ko': 'Korean',
+    'pl': 'Polish',
+    'pt': 'Portuguese',
+    'ru': 'Russian',
+    'es': 'Spanish',
+    'tr': 'Turkish'
+}
+
 theme = gr.themes.Monochrome()
+
+#################################################
+################### Translate ###################
+#################################################
+
+translator = Translator()
+
+def translate_prompt(prompt,lang):
+    try:
+        translated = translator.translate(prompt, src= lang, dest='en')
+        return translated.text
+    except Exception as e:
+        return f"번역 오류: {e}"
 
 #################################################
 #################### Txt2Img ####################
@@ -99,6 +129,12 @@ theme = gr.themes.Monochrome()
 with gr.Blocks() as text_to_img:
     with gr.Row():
         with gr.Column():
+            lang_dropdown = gr.Dropdown(
+                choices=[(name, code) for code, name in language_options.items()],
+                label="Input Language",
+                value="auto", 
+                show_label=True,
+            )
             prompt = gr.Textbox(
                 label="Prompt",
                 show_label=True,
@@ -110,6 +146,11 @@ with gr.Blocks() as text_to_img:
                 show_label=True,
                 max_lines=2,
                 placeholder="Enter Negative prompt"
+            )
+            applied_lora = gr.Textbox(
+                label="Applied LoRA",
+                show_label=True,
+                max_lines=2,
             )
             step_slider = gr.Slider(
                 value=20,
@@ -162,18 +203,35 @@ with gr.Blocks() as text_to_img:
             lora_dropdown.change(
             fn=add_loras,
             inputs=lora_dropdown, 
-            outputs=prompt, 
+            outputs=applied_lora, 
             )
         with gr.Column():
             generate_button = gr.Button("Generate Image")
             t2i_result = gr.Image()
+            translated_positive_prompt = gr.Textbox(
+                label="Translated Positive Prompt",
+                show_label=True,
+                interactive=False
+            )
+            translated_negative_prompt = gr.Textbox(
+                label="Translated Negative Prompt",
+                show_label=True,
+                interactive=False
+            )
+
+        # 번 역 부 분 #
+        def generate_image_with_translation(prompt, negative_prompt, applied_lora, steps, width, height, model_name, lora_name, lang):
+            prompt_en = translate_prompt(prompt, lang) 
+            negative_prompt_en = translate_prompt(negative_prompt,lang)  
+            return txt2img.generate_image(prompt_en, negative_prompt_en, applied_lora, steps, width, height, model_name, lora_name), prompt_en, negative_prompt_en
 
         generate_button.click(
-            fn=txt2img.generate_image,
-            inputs=[prompt, negative_prompt, step_slider, width_slider, height_slider, model_dropdown, lora_dropdown],
-            outputs=t2i_result
+            fn=generate_image_with_translation,
+            #fn=txt2img.generate_image,
+            inputs=[prompt, negative_prompt, applied_lora, step_slider, width_slider, height_slider, model_dropdown, lora_dropdown, lang_dropdown],
+            outputs=[t2i_result, translated_positive_prompt, translated_negative_prompt]
             )
-        
+
 
 #################################################
 #################### Img2Img ####################
@@ -183,6 +241,12 @@ with gr.Blocks() as img_to_img:
     with gr.Row():
         with gr.Column():
             i2i_input = gr.Image(show_label=False)
+            lang_dropdown = gr.Dropdown(
+                choices=[(name, code) for code, name in language_options.items()],
+                label="Input Language",
+                value="auto", 
+                show_label=True,
+            )
             i2i_prompt = gr.Textbox(
                 label="Prompt",
                 show_label=True,
@@ -194,6 +258,11 @@ with gr.Blocks() as img_to_img:
                 show_label=True,
                 max_lines=2,
                 placeholder="Enter Negative prompt", 
+            )
+            i2i_applied_lora = gr.Textbox(
+                label="Applied LoRA",
+                show_label=True,
+                max_lines=2,
             )
             i2i_step_slider = gr.Slider(
                 value=20,
@@ -252,16 +321,32 @@ with gr.Blocks() as img_to_img:
             i2i_lora_dropdown.change(
             fn=add_loras,
             inputs=i2i_lora_dropdown, 
-            outputs=i2i_prompt, 
+            outputs=i2i_applied_lora, 
             )
         with gr.Column():
             generate_button = gr.Button("Generate Image")
             i2i_result = gr.Image()
+            translated_positive_prompt = gr.Textbox(
+                label="Translated Positive Prompt",
+                show_label=True,
+                interactive=False
+            )
+            translated_negative_prompt = gr.Textbox(
+                label="Translated Negative Prompt",
+                show_label=True,
+                interactive=False
+            )
 
+        def generate_image_with_translation(i2i_input, i2i_prompt, i2i_negative_prompt, i2i_applied_lora, steps, width, height, denoising_strength, model_name, lora_name, lang):
+            i2i_prompt_en = translate_prompt(i2i_prompt, lang) 
+            i2i_negative_prompt_en = translate_prompt(i2i_negative_prompt, lang)  
+            return img2img.generate_img2img(i2i_input, i2i_prompt_en, i2i_negative_prompt_en, i2i_applied_lora, steps, width, height, denoising_strength, model_name, lora_name), i2i_prompt_en, i2i_negative_prompt_en
+        
         generate_button.click(
-            fn=img2img.generate_img2img,
-            inputs=[i2i_input, i2i_prompt, i2i_negative_prompt, i2i_step_slider, i2i_width_slider, i2i_height_slider, i2i_denoising_strength_silder, i2i_model_dropdown, i2i_lora_dropdown],
-            outputs=i2i_result
+            fn=generate_image_with_translation,
+            #fn=img2img.generate_img2img,
+            inputs=[i2i_input, i2i_prompt, i2i_negative_prompt, i2i_applied_lora, i2i_step_slider, i2i_width_slider, i2i_height_slider, i2i_denoising_strength_silder, i2i_model_dropdown, i2i_lora_dropdown, lang_dropdown],
+            outputs=[i2i_result, translated_positive_prompt, translated_negative_prompt]
             )
         
 #################################################
@@ -275,6 +360,12 @@ with gr.Blocks() as inpaint_tab:
                 label="Inpaint", 
                 show_label=True, 
             )
+            lang_dropdown = gr.Dropdown(
+                choices=[(name, code) for code, name in language_options.items()],
+                label="Input Language",
+                value="auto", 
+                show_label=True,
+            )
             in_prompt = gr.Textbox(
                 label="Prompt",
                 show_label=True,
@@ -286,6 +377,11 @@ with gr.Blocks() as inpaint_tab:
                 show_label=True,
                 max_lines=2,
                 placeholder="Enter Negative prompt", 
+            )
+            in_applied_lora = gr.Textbox(
+                label="Applied LoRA",
+                show_label=True,
+                max_lines=2,
             )
             in_step_slider = gr.Slider(
                 value=20,
@@ -344,16 +440,31 @@ with gr.Blocks() as inpaint_tab:
             in_lora_dropdown.change(
             fn=add_loras,
             inputs=in_lora_dropdown, 
-            outputs=in_prompt, 
+            outputs=in_applied_lora, 
             )
         with gr.Column():
             generate_button = gr.Button("Generate Image")
             in_result = gr.Image()
+            translated_positive_prompt = gr.Textbox(
+                label="Translated Positive Prompt",
+                show_label=True,
+                interactive=False
+            )
+            translated_negative_prompt = gr.Textbox(
+                label="Translated Negative Prompt",
+                show_label=True,
+                interactive=False
+            )
 
+        def generate_image_with_translation(in_mask,in_prompt, in_negative_prompt, in_applied_lora, steps, width, height, denoising_strength, model_name, lora_name, lang):
+            in_prompt_en = translate_prompt(in_prompt, lang) 
+            in_negative_prompt_en = translate_prompt(in_negative_prompt, lang)  
+            return inpaint.generate_inpaint(in_mask, in_prompt_en, in_negative_prompt_en, in_applied_lora, steps, width, height, denoising_strength, model_name, lora_name), in_prompt_en, in_negative_prompt_en
+        
         generate_button.click(
-            fn=inpaint.generate_inpaint, 
-            inputs=[in_mask, in_prompt, in_negative_prompt, in_step_slider, in_width_slider, in_height_slider, in_denoising_strength_silder, in_model_dropdown, in_lora_dropdown],
-            outputs=in_result
+            fn=generate_image_with_translation, 
+            inputs=[in_mask, in_prompt, in_negative_prompt, in_applied_lora, in_step_slider, in_width_slider, in_height_slider, in_denoising_strength_silder, in_model_dropdown, in_lora_dropdown, lang_dropdown],
+            outputs=[in_result, translated_positive_prompt, translated_negative_prompt]
             )
 
 ################################################

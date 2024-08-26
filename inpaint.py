@@ -2,7 +2,7 @@ import api_client
 from PIL import Image
 import numpy as np
 
-def generate_inpaint(in_mask, prompt, negative_prompt, step_slider, width_slider, height_slider, denoising_strength, model_dropdown, lora_dropdown):
+def generate_inpaint(in_mask, prompt, negative_prompt, applied_lora, step_slider, width_slider, height_slider, denoising_strength, model_dropdown, lora_dropdown):
     image = in_mask['background']
     mask = in_mask['layers']
     com = in_mask['composite']
@@ -14,6 +14,7 @@ def generate_inpaint(in_mask, prompt, negative_prompt, step_slider, width_slider
     print('mask=',inverted_mask)
     print('com=',com)
 
+    prompt += applied_lora
     api_client.change_model(model_dropdown)
     result2 = api_client.api.img2img(
         images=[Image.fromarray(image)],
