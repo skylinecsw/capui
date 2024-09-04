@@ -7,12 +7,12 @@ def generate_inpaint(in_mask, prompt, negative_prompt, applied_lora, step_slider
     mask = in_mask['layers']
     com = in_mask['composite']
 
-    inverted_mask = np.invert(mask[0])
+    # inverted_mask = np.invert(mask[0])
 
-    print('image=',image)
-    print('mask=',mask[0])
-    print('mask=',inverted_mask)
-    print('com=',com)
+    # print('image=',image)
+    # print('mask=',mask[0])
+    # print('mask=',inverted_mask)
+    # print('com=',com)
 
     prompt += applied_lora
     api_client.change_model(model_dropdown)

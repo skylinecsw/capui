@@ -54,15 +54,15 @@ def open_removed_folder(model_input_path):
     except Exception as e:
         return f"오류가 발생했습니다: {e}"
 
-def get_model_names(modelfolder_path, extensions):
-    try:
-        # 폴더 내의 모든 파일과 폴더를 리스트로 가져옵니다.
-        all_files = os.listdir(modelfolder_path)
-        # 지정된 확장자를 가진 파일들을 필터링합니다.
-        model_names = [file for file in all_files if file.endswith(extensions)]
-        return model_names
-    except Exception as e:
-        return f"오류가 발생했습니다: {e}"
+# def get_model_names(modelfolder_path, extensions):
+#     try:
+#         # 폴더 내의 모든 파일과 폴더를 리스트로 가져옵니다.
+#         all_files = os.listdir(modelfolder_path)
+#         # 지정된 확장자를 가진 파일들을 필터링합니다.
+#         model_names = [file for file in all_files if file.endswith(extensions)]
+#         return model_names
+#     except Exception as e:
+#         return f"오류가 발생했습니다: {e}"
 
 lorafolder_path = "stable-diffusion-webui\models\Lora"
 extensions = (".ckpt", ".safetensors")
