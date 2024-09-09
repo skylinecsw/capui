@@ -19,35 +19,35 @@ task_prompt = '<OD>'
 bgremoved_images_directory = "background-removed-images"
 
 def plot_bbox(image, data):
-    # Create a figure and axes
+    # 도형 및 축 만들기
     fig, ax = plt.subplots()
 
-    # Display the image
+    # 이미지 표시
     ax.imshow(image)
 
-    # Plot each bounding box
+    # 바운딩 박스 플롯에 표시
     for bbox, label in zip(data['bboxes'], data['labels']):
-        # Unpack the bounding box coordinates
+        # 바운딩 박스 좌표 풀기
         x1, y1, x2, y2 = bbox
-        # Create a Rectangle patch
+        # 직사각형 패치 생성
         rect = patches.Rectangle((x1, y1), x2-x1, y2-y1, linewidth=1, edgecolor='r', facecolor='none')
-        # Add the rectangle to the Axes
+        # 축에 직사각형 추가
         ax.add_patch(rect)
-        # Annotate the label
+        # 레이블에 주석 달기
         plt.text(x1, y1, label, color='white', fontsize=8, bbox=dict(facecolor='red', alpha=0.5))
 
-    # Remove the axis ticks and labels
+    # 축 눈금 및 레이블 제거
     ax.axis('off')
 
-    # Save the plot to a BytesIO object
+    # BytesIO 개체에 플롯 저장
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)
 
-    # Convert the BytesIO object to a PIL Image
+    # BytesIO 개체를 PIL 이미지로 변환
     bbox_image = Image.open(buf)
 
-    # Close the plot to free memory
+    # 플롯을 닫아 메모리 확보
     plt.close(fig)
 
     return bbox_image
@@ -71,7 +71,7 @@ def background_remover_and_bbox(image_path, padding=30):
         image_save_path = os.path.join(folder_path, new_name)
         unique_suffix += 1
 
-    # Run the model and process the image
+    # 모델 실행 및 이미지 처리
     prompt = task_prompt
     inputs = processor(text=prompt, images=img, return_tensors="pt")
     inputs = {k: v.to(device) for k, v in inputs.items()}  # 입력 데이터 타입 변환

@@ -1,6 +1,6 @@
-gradio 4.26.0
+run install_1.bat
 
-install python 3.10.9
+go to capui folder
 
 run install.bat
 

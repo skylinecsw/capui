@@ -7,14 +7,8 @@ def generate_inpaint(in_mask, prompt, negative_prompt, applied_lora, step_slider
     mask = in_mask['layers']
     com = in_mask['composite']
 
-    # inverted_mask = np.invert(mask[0])
-
-    # print('image=',image)
-    # print('mask=',mask[0])
-    # print('mask=',inverted_mask)
-    # print('com=',com)
-
     prompt += applied_lora
+    negative_prompt += ", nsfw"
     api_client.change_model(model_dropdown)
     result2 = api_client.api.img2img(
         images=[Image.fromarray(image)],

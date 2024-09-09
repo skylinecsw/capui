@@ -3,3 +3,4 @@ attr
 gradio
 aiohttp
 rembg
+install flash-attn --no-build-isolation

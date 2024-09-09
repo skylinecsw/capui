@@ -4,7 +4,7 @@ import img2img
 import inpaint
 import os
 import img_viewer
-# import background_remover_yolo
+import background_remover_yolo
 import background_remover_florence
 import api_client
 
@@ -26,10 +26,12 @@ from googletrans import Translator
 ## Unity Folder로 이미지 이동하는 코드 추가 필요
 ##
 
+# 프롬프트에 로라 추가 시 필요
 def add_loras(lora_name):
     lora = "<lora:" + lora_name + ":1>"
     return lora
 
+# 파일 관리자에서 폴더 열기
 def open_folder(model_input_path):
     model_input_path = "stable-diffusion-webui\models\Stable-diffusion"
     try:
@@ -54,42 +56,13 @@ def open_removed_folder(model_input_path):
     except Exception as e:
         return f"오류가 발생했습니다: {e}"
 
-# def get_model_names(modelfolder_path, extensions):
-#     try:
-#         # 폴더 내의 모든 파일과 폴더를 리스트로 가져옵니다.
-#         all_files = os.listdir(modelfolder_path)
-#         # 지정된 확장자를 가진 파일들을 필터링합니다.
-#         model_names = [file for file in all_files if file.endswith(extensions)]
-#         return model_names
-#     except Exception as e:
-#         return f"오류가 발생했습니다: {e}"
-
 lorafolder_path = "stable-diffusion-webui\models\Lora"
 extensions = (".ckpt", ".safetensors")
 
+#모델들, 현재 모델, 로라 이름 받아오기
 model_names = api_client.api.util_get_model_names()
 current_model = api_client.api.util_get_current_model()
-# lora_names = get_model_names(lorafolder_path, extensions)
 lora_names = api_client.api.util_get_lora_names()
-
-lora_list = [
-        ('None', ''), 
-        ('Texture_1', 'texture,  <lora:texture_1:1>'), 
-        ('Sprite_1_epoch_1', 'sprite,  <lora:sprite_1-000001:0.8>'), 
-        ('Sprite_1_epoch_2', 'sprite,  <lora:sprite_1:0.8>'), 
-        ('Texture', 'diffuse texture, <lora:DiffuseTexture_v11:1>'), 
-        ('Metal Texture', 'metal texture, <lora:dirtymetal_textures_1:0.8>'), 
-        ('Old school Texture', 'texture, old school, quake, <lora:Quake_Lora:1>'), 
-        ('Book', 'book, <lora:FantasyIcons_Books_noFlip:1>'), 
-        ('Gemstone', 'gemstone, <lora:FantasyIcons_Gemstones:1>'), 
-        ('pixel sprites', 'pixel, pixel art, pixelart, xiangsu, xiang su, <lora:pixel sprites:1>'), 
-        ('PixelAnimal', 'animal, pixel, pixel art, pixelart, xiangsu, xiang su, <lora:PixelAnimal:1>'), 
-        ('Pixel Weapon(axe, sword, bow)', 'weapon, no humans, pixel, pixel art, pixelart, <lora:pixel sword:1>'), 
-        ('Pixel Gun', 'gun, no humans, pixel, pixel art, pixelart, <lora:pixel gun:1>'), 
-        ('Pixel Book', 'boox,pixel, pixel art, pixelart, xiangsu, xiang su, <lora:pixel book:1>'), 
-        ('Pixel Bottle', 'bottle,pixel, pixel art, pixelart, xiangsu, xiang su, simple background, <lora:Pixel bottle:1>'), 
-        ('Pixel Isometry', '((Isometry)), pixel, pixel art, solo, <lora:Pixel_Building2:1>'), 
-        ]
 
 language_options = {
     'auto': 'Auto Detection',
@@ -474,6 +447,9 @@ with gr.Blocks() as inpaint_tab:
 with gr.Blocks() as img_viewer_tab:
     with gr.Row():
         with gr.Column():
+            # def update_choices():
+            #     choices=img_viewer.get_folders_in_directory("stable-diffusion-webui/output/txt2img-images")
+            #     return gr.Dropdown(choices=choices, interactive=True)=
             t2i_folder_dropdown = gr.Dropdown(
                 label="txt2img Folder Path",
                 choices=img_viewer.get_folders_in_directory("stable-diffusion-webui/output/txt2img-images"),
@@ -513,6 +489,10 @@ with gr.Blocks() as img_viewer_tab:
             inputs=bgremoved_folder_dropdown, 
             outputs=img_view_result, 
         )
+        # t2i_refresh_button.click(
+        #     fn=img_viewer.load_images_from_folder,
+        #     outputs=t2i_folder_dropdown
+        # )
         t2i_refresh_button.click(
             fn=img_viewer.load_images_from_folder,
             inputs=t2i_folder_dropdown, 
