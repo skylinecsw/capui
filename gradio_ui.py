@@ -516,9 +516,10 @@ with gr.Blocks() as img_viewer_tab:
 with gr.Blocks() as background_remover_tab:
     with gr.Row():
         with gr.Column():
-            yolo_image = gr.Image(
+            yolo_image = gr.File(
                 type="filepath", 
-                label="Upload Image"
+                label="Upload Image",
+                file_count='multiple',
                 )
             button = gr.Button(
                 value="Open Background removed Folder", 
@@ -527,12 +528,9 @@ with gr.Blocks() as background_remover_tab:
             button.click(fn=open_removed_folder, inputs=[], outputs=[])
         with gr.Column():
             remove_button = gr.Button("Start")
-            removed_image = [gr.Image(
-                label="Image with Bounding Boxes"
-            ), 
-            gr.Image(
-                label="Cropped & Background Removed Image"
-            )
+            removed_image = [
+                gr.Gallery(label="Image with Bounding Boxes"), 
+                gr.Gallery(label="Cropped & Background Removed Image")
             ]
         remove_button.click(
                 # fn=background_remover_yolo.background_remover_and_bbox,

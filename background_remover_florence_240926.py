@@ -53,85 +53,78 @@ def plot_bbox(image, data):
     return bbox_image
 
 def background_remover_and_bbox(image_path, padding=30):
-    img_with_boxes_list = []
-    background_removed_list = []
+    img = Image.open(image_path)
+
+    base_name = os.path.basename(image_path)  # 이미지 원본 이름 추출
+    name, ext = os.path.splitext(base_name)
+    new_name = f"{name}_removed.png"
 
     current_date = datetime.now().strftime("%Y-%m-%d")
     folder_path = os.path.join(bgremoved_images_directory, current_date)
     os.makedirs(folder_path, exist_ok=True)
     
-    for image_file in image_path:
+    # 파일 이름 중복 확인 및 새로운 이름 생성
+    image_save_path = os.path.join(folder_path, new_name)
+    unique_suffix = 1
+    while os.path.exists(image_save_path):  # 이미 존재하는 파일 이름인 경우
+        new_name = f"{name}_removed_{unique_suffix}.png"
+        image_save_path = os.path.join(folder_path, new_name)
+        unique_suffix += 1
 
-        img = Image.open(image_file)
+    # 모델 실행 및 이미지 처리
+    prompt = task_prompt
+    inputs = processor(text=prompt, images=img, return_tensors="pt")
+    inputs = {k: v.to(device) for k, v in inputs.items()}  # 입력 데이터 타입 변환
+    inputs["input_ids"] = inputs["input_ids"].long()  # input_ids를 LongTensor로 변환
+    generated_ids = model.generate(
+      input_ids=inputs["input_ids"],
+      pixel_values=inputs["pixel_values"].to(device, dtype=torch_dtype),
+      max_new_tokens=1024,
+      early_stopping=False,
+      do_sample=False,
+      num_beams=1,
+    )
+    generated_text = processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
+    parsed_answer = processor.post_process_generation(
+        generated_text,
+        task=task_prompt,
+        image_size=(img.width, img.height)
+    )
 
-        base_name = os.path.basename(image_file)  # 이미지 원본 이름 추출
-        name, ext = os.path.splitext(base_name)
-        new_name = f"{name}_removed.png"
-        
-        # 파일 이름 중복 확인 및 새로운 이름 생성
+    img_with_boxes = plot_bbox(img, parsed_answer['<OD>'])  # bounding box가 그려진 이미지
+
+    # 가장 큰 bbox 찾기
+    max_area = 0
+    largest_bbox = None
+    for bbox in parsed_answer['<OD>']['bboxes']:
+        x1, y1, x2, y2 = bbox
+        area = (x2 - x1) * (y2 - y1)
+        if area > max_area:
+            max_area = area
+            largest_bbox = bbox
+
+    if largest_bbox:
+        x1, y1, x2, y2 = largest_bbox
+        # 여백을 추가하여 좌표 조정
+        x1 = max(0, x1 - padding)
+        y1 = max(0, y1 - padding)
+        x2 = min(img.width, x2 + padding)
+        y2 = min(img.height, y2 + padding)
+        cropped_img = img.crop((x1, y1, x2, y2))
+        background_removed_img = remove(cropped_img)  # 크롭 이미지에서 배경제거
+
+        # 고유한 파일 이름 생성
+        new_name = f"{name}_removed_largest.png"
         image_save_path = os.path.join(folder_path, new_name)
         unique_suffix = 1
         while os.path.exists(image_save_path):  # 이미 존재하는 파일 이름인 경우
-            new_name = f"{name}_removed_{unique_suffix}.png"
+            new_name = f"{name}_removed_largest_{unique_suffix}.png"
             image_save_path = os.path.join(folder_path, new_name)
             unique_suffix += 1
 
-        # 모델 실행 및 이미지 처리
-        prompt = task_prompt
-        inputs = processor(text=prompt, images=img, return_tensors="pt")
-        inputs = {k: v.to(device) for k, v in inputs.items()}  # 입력 데이터 타입 변환
-        inputs["input_ids"] = inputs["input_ids"].long()  # input_ids를 LongTensor로 변환
-        generated_ids = model.generate(
-        input_ids=inputs["input_ids"],
-        pixel_values=inputs["pixel_values"].to(device, dtype=torch_dtype),
-        max_new_tokens=1024,
-        early_stopping=False,
-        do_sample=False,
-        num_beams=1,
-        )
-        generated_text = processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
-        parsed_answer = processor.post_process_generation(
-            generated_text,
-            task=task_prompt,
-            image_size=(img.width, img.height)
-        )
+        background_removed_img.save(image_save_path)  # 이미지 저장
 
-        img_with_boxes = plot_bbox(img, parsed_answer['<OD>'])  # bounding box가 그려진 이미지
-        img_with_boxes_list.append(img_with_boxes)
-
-        # 가장 큰 bbox 찾기
-        max_area = 0
-        largest_bbox = None
-        for bbox in parsed_answer['<OD>']['bboxes']:
-            x1, y1, x2, y2 = bbox
-            area = (x2 - x1) * (y2 - y1)
-            if area > max_area:
-                max_area = area
-                largest_bbox = bbox
-
-        if largest_bbox:
-            x1, y1, x2, y2 = largest_bbox
-            # 여백을 추가하여 좌표 조정
-            x1 = max(0, x1 - padding)
-            y1 = max(0, y1 - padding)
-            x2 = min(img.width, x2 + padding)
-            y2 = min(img.height, y2 + padding)
-            cropped_img = img.crop((x1, y1, x2, y2))
-            background_removed_img = remove(cropped_img)  # 크롭 이미지에서 배경제거
-
-            # 고유한 파일 이름 생성
-            new_name = f"{name}_removed_largest.png"
-            image_save_path = os.path.join(folder_path, new_name)
-            unique_suffix = 1
-            while os.path.exists(image_save_path):  # 이미 존재하는 파일 이름인 경우
-                new_name = f"{name}_removed_largest_{unique_suffix}.png"
-                image_save_path = os.path.join(folder_path, new_name)
-                unique_suffix += 1
-
-            background_removed_img.save(image_save_path)  # 이미지 저장
-            background_removed_list.append(background_removed_img)
-
-    return img_with_boxes_list, background_removed_list
+    return img_with_boxes, background_removed_img
 
     # for i, (bbox, label) in enumerate(zip(parsed_answer['<OD>']['bboxes'], parsed_answer['<OD>']['labels'])):  # 모든 bbox에 대해 반복
     #     x1, y1, x2, y2 = bbox
